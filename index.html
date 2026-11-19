@@ -268,7 +268,7 @@ function renderCart(){
 
 function renderTexts(){
   $('#tagline').textContent = t('tag');
-  $('#foot').textContent = 'demo · Lentalar.uz · ' + (lang === 'ru' ? 'каталог' : 'katalog');
+  $('#foot').textContent = 'demo · ' + APP_VER + ' · Lentalar.uz · ' + (lang === 'ru' ? 'каталог' : 'katalog');
   $('#b-ru').classList.toggle('on', lang === 'ru');
   $('#b-uz').classList.toggle('on', lang === 'uz');
 }
@@ -287,21 +287,61 @@ function nativeMsg(m){
   toast(m);
 }
 
-function trySend(){
-  var name = $('#fname').value.trim(), phone = $('#fphone').value.trim();
-  if (!name || !phone) { nativeMsg(t('need')); return; }
-  if (!cartQty()) { nativeMsg(t('empty')); return; }
+var ORDER_URL = 'https://lentalar-order.marsel20172.workers.dev/order';
+var APP_VER = 'v2';
+
+function setSending(on){
+  var b = $('#sendbtn');
+  b.disabled = on;
+  b.style.opacity = on ? .55 : 1;
+  b.textContent = on ? '…' : t('send');
+}
+
+function payloadNow(){
   var items = [];
   for (var i=0;i<P.length;i++){
     var q = cart[P[i].id];
-    if (q) items.push({id:P[i].id, qty:q});
+    if (q) items.push({name:P[i].name, qty:q});
   }
-  var payload = {app:'lentalar', lang:lang, items:items, name:name, phone:phone, note:$('#fnote').value.trim()};
-  if (tg && typeof tg.sendData === 'function' && tg.initData) {
-    try { tg.sendData(JSON.stringify(payload)); return; }
-    catch(e){ nativeMsg('Ошибка отправки: ' + (e && e.message ? e.message : '—')); return; }
-  }
-  nativeMsg(t('openbot'));
+  return {app:'lentalar', ver:APP_VER, lang:lang, items:items,
+          name:$('#fname').value.trim(), phone:$('#fphone').value.trim(), note:$('#fnote').value.trim()};
+}
+
+function orderDone(){
+  hap();
+  try { tg && tg.HapticFeedback.notificationOccurred('success'); } catch(e){}
+  $('#cartitems').innerHTML = '<div class="ci" style="font-size:15px">✅ ' + t('sent') + '</div>';
+  $('#fname').value = ''; $('#fphone').value = ''; $('#fnote').value = '';
+  cart = {}; renderGrid(); renderBar();
+  setTimeout(function(){ $('#sheet').style.display = 'none'; syncMainBtn(); }, 2600);
+}
+
+function trySend(){
+  if ($('#sendbtn').disabled) return;
+  var name = $('#fname').value.trim(), phone = $('#fphone').value.trim();
+  if (!name || !phone) { nativeMsg(t('need')); return; }
+  if (!cartQty()) { nativeMsg(t('empty')); return; }
+  var payload = payloadNow();
+  setSending(true);
+  fetch(ORDER_URL, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(payload)
+  }).then(function(r){ return r.json().catch(function(){ return {ok:false}; }); })
+    .then(function(j){
+      if (j && j.ok) { setSending(false); orderDone(); return; }
+      throw new Error((j && j.error) || 'HTTP');
+    })
+    .catch(function(e){
+      // запасной путь: нативная sendData (если апп открыт из бота)
+      try {
+        if (tg && typeof tg.sendData === 'function' && tg.initData) {
+          tg.sendData(JSON.stringify(payload)); return;
+        }
+      } catch(e2){}
+      setSending(false);
+      nativeMsg('Не удалось отправить: ' + (e && e.message ? e.message : 'сеть'));
+    });
 }
 
 var mainBtnHooked = false;
