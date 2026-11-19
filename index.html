@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lentalar.uz — каталог</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root{
+    --bg:#f4f2ef; --card:#ffffff; --text:#1d1a17; --muted:#8a8178;
+    --accent:#7a1f2b; --accent2:#b5893a; --line:#e7e1da; --chip:#ffffff;
+    --shadow:0 6px 24px rgba(60,40,30,.10);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  html,body{margin:0; padding:0}
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;
+    padding-bottom:86px; overflow-x:hidden;
+  }
+  body.dark{ --bg:#1d1a17; --card:#282320; --text:#f2ede8; --muted:#9a9088;
+    --accent:#d34756; --accent2:#cfa460; --line:#3a332e; --chip:#282320;
+    --shadow:0 6px 24px rgba(0,0,0,.35);
+  }
+  header{
+    position:sticky; top:0; z-index:10; display:flex; align-items:center;
+    justify-content:space-between; padding:12px 14px 10px;
+    background:var(--bg); border-bottom:1px solid var(--line);
+  }
+  .brand{display:flex; align-items:center; gap:10px; min-width:0}
+  .logo{
+    width:40px; height:40px; border-radius:12px; flex:0 0 auto;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    display:flex; align-items:center; justify-content:center; font-size:20px;
+  }
+  .brand b{font-size:17px; letter-spacing:.2px; display:block}
+  .brand small{color:var(--muted); font-size:12px; display:block}
+  .lang{display:flex; background:var(--card); border:1px solid var(--line); border-radius:20px; padding:3px; gap:2px; flex:0 0 auto}
+  .lang button{
+    border:0; background:transparent; color:var(--muted); font-weight:600;
+    padding:5px 12px; border-radius:16px; font-size:13px; cursor:pointer;
+  }
+  .lang button.on{background:var(--accent); color:#fff}
+  .chips{
+    display:flex; gap:8px; padding:12px 14px 4px; overflow-x:auto;
+    scrollbar-width:none; -webkit-overflow-scrolling:touch;
+  }
+  .chips::-webkit-scrollbar{display:none}
+  .chip{
+    flex:0 0 auto; border:1px solid var(--line); background:var(--chip); color:var(--text);
+    padding:8px 14px; border-radius:18px; font-size:13.5px; font-weight:600; cursor:pointer; white-space:nowrap;
+  }
+  .chip.on{background:var(--accent); border-color:var(--accent); color:#fff}
+  .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(158px,1fr)); gap:12px; padding:12px 14px}
+  @media (max-width:380px){ .grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:10px; padding:12px 10px} }
+  .card{
+    background:var(--card); border-radius:16px; box-shadow:var(--shadow);
+    overflow:hidden; display:flex; flex-direction:column;
+  }
+  .card .ph{width:100%; aspect-ratio:4/3.4; object-fit:cover; display:block; background:var(--line)}
+  .card .in{padding:10px 12px 12px; display:flex; flex-direction:column; gap:4px; flex:1}
+  .card h3{margin:0; font-size:14.5px; line-height:1.25}
+  .card .mt{color:var(--muted); font-size:12px}
+  .card .nt{color:var(--text); opacity:.75; font-size:12px; line-height:1.35; flex:1}
+  .step{display:flex; align-items:center; justify-content:space-between; margin-top:8px;
+    border:1px solid var(--line); border-radius:12px; padding:4px 6px}
+  .step button{
+    width:32px; height:30px; border:0; border-radius:10px; font-size:17px; font-weight:700; cursor:pointer;
+    background:var(--bg); color:var(--text);
+  }
+  .step .q{font-weight:700; font-size:14px; min-width:22px; text-align:center}
+  .step .add{background:var(--accent); color:#fff}
+  .soon{
+    grid-column:1/-1; background:var(--card); border-radius:16px; box-shadow:var(--shadow);
+    padding:26px 18px; text-align:center; color:var(--muted); font-size:14px;
+  }
+  .cartbar{
+    position:fixed; left:12px; right:12px; bottom:12px; z-index:20;
+    background:var(--accent); color:#fff; border-radius:16px; box-shadow:0 8px 28px rgba(0,0,0,.28);
+    display:none; align-items:center; justify-content:space-between; gap:10px;
+    padding:14px 16px; cursor:pointer; max-width:520px; margin:0 auto;
+  }
+  .cartbar .l{font-weight:700; font-size:15px}
+  .cartbar .r{background:rgba(255,255,255,.18); padding:6px 14px; border-radius:12px; font-weight:700; font-size:14px}
+  .sheet{
+    position:fixed; inset:0; z-index:30; display:none;
+    background:rgba(0,0,0,.45); align-items:flex-end; justify-content:center;
+  }
+  .sheet .box{
+    background:var(--bg); color:var(--text); width:100%; max-width:520px;
+    border-radius:20px 20px 0 0; padding:18px 16px calc(20px + env(safe-area-inset-bottom));
+    max-height:88vh; overflow-y:auto;
+  }
+  .sheet h2{margin:0 0 12px; font-size:18px; display:flex; justify-content:space-between; align-items:center}
+  .sheet h2 button{border:0; background:var(--card); color:var(--text); width:30px; height:30px; border-radius:10px; font-size:16px; cursor:pointer}
+  .ci{display:flex; justify-content:space-between; gap:10px; padding:8px 0; border-bottom:1px solid var(--line); font-size:14px}
+  .ci .x{color:var(--muted); cursor:pointer; font-weight:700}
+  .f{margin-top:14px; display:flex; flex-direction:column; gap:9px}
+  .f input,.f textarea{
+    width:100%; border:1px solid var(--line); background:var(--card); color:var(--text);
+    border-radius:12px; padding:12px 14px; font-size:14.5px; font-family:inherit; outline:none;
+  }
+  .f textarea{min-height:64px; resize:vertical}
+  .send{
+    margin-top:4px; border:0; background:var(--accent); color:#fff; font-weight:700;
+    font-size:15.5px; padding:14px; border-radius:14px; cursor:pointer;
+  }
+  .hint{color:var(--muted); font-size:12.5px; margin-top:10px; text-align:center; line-height:1.4}
+  .toast{
+    position:fixed; left:50%; bottom:96px; transform:translateX(-50%) translateY(20px);
+    background:#2e2a26; color:#fff; padding:11px 18px; border-radius:14px; font-size:13.5px;
+    opacity:0; pointer-events:none; transition:.25s; z-index:40; max-width:86vw; text-align:center;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+  .foot{color:var(--muted); text-align:center; font-size:11.5px; padding:8px 0 4px}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div class="logo">🎓</div>
+    <div><b>Lentalar.uz</b><small id="tagline">Bitiruv lentalari</small></div>
+  </div>
+  <div class="lang">
+    <button id="b-ru">RU</button><button id="b-uz">UZ</button>
+  </div>
+</header>
+
+<div class="chips" id="chips"></div>
+<div class="grid" id="grid"></div>
+<div class="foot" id="foot">demo · Lentalar.uz</div>
+
+<div class="cartbar" id="cartbar">
+  <span class="l" id="cartlabel">Корзина</span>
+  <span class="r" id="cartcount">0</span>
+</div>
+
+<div class="sheet" id="sheet">
+  <div class="box">
+    <h2><span id="sheettitle">Корзина</span><button id="close">✕</button></h2>
+    <div id="cartitems"></div>
+    <div class="f">
+      <input id="fname" placeholder="Ваше имя">
+      <input id="fphone" placeholder="Телефон / Telegram">
+      <textarea id="fnote" placeholder="Комментарий (необязательно)"></textarea>
+      <button class="send" id="sendbtn">Отправить заказ ✈️</button>
+      <div class="hint" id="hint"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var tg = window.Telegram && Telegram.WebApp ? Telegram.WebApp : null;
+if (tg) { try { tg.ready(); tg.expand(); } catch(e){} }
+if (tg && tg.colorScheme === 'dark') document.body.classList.add('dark');
+
+var CATS = ["Satin","2027 Fason","Sharfli Lentalar","Baxmal/Zamshli","Bog'cha"];
+var CATS_RU = ["Атласные","Фасон 2027","С вышивкой","Бархат и велюр","Детские"];
+
+var P = [
+ {id:0, cat:0, img:"img/website_media_012.jpg", name:"Burgundy Signature", mat:["Атлас","Satin"],  col:["Бордо","Bordo"],  n:["Золотая надпись и мягкий блеск","Oltin yozuv va yumshoq jilva"]},
+ {id:1, cat:0, img:"img/website_media_014.jpg", name:"Noir & Silver",      mat:["Атлас","Satin"],  col:["Чёрный","Qora"],  n:["Серебряная надпись и глубокий цвет","Kumush yozuv va chuqur rang"]},
+ {id:2, cat:1, img:"img/website_media_016.jpg", name:"Forest Class",       mat:["Бархат","Baxmal"],col:["Зелёный","Yashil"],n:["Плотная фактура и спокойный характер","Zich faktura va sokin kayfiyat"]},
+ {id:3, cat:1, img:"img/website_media_019.jpg", name:"Class of 2027",      mat:["Атлас","Satin"],  col:["Чёрный","Qora"],  n:["Для групповых заказов (20+ шт)","Guruh buyurtmalari uchun (20+ dona)"]},
+ {id:4, cat:2, img:"img/website_media_011.jpg", name:"Ivory Ceremony",     mat:["Атлас","Satin"],  col:["Айвори","Ivory"], n:["Светлая палитра и цветочные детали","Yorqin palitra va gul detallari"]},
+ {id:5, cat:3, img:"img/website_media_017.jpg", name:"Velvet Letter",      mat:["Велюр","Zamsha"], col:["Бордо","Bordo"],  n:["Матовое полотно и объёмная надпись","Mat yuzasi va bo'rtma yozuv"]}
+];
+
+var L = {
+ ru:{tag:"Выпускные ленты", all:"Все", cart:"Корзина", checkout:"Оформить", empty:"Корзина пуста",
+     name:"Ваше имя", phone:"Телефон или Telegram", note:"Комментарий (необязательно)",
+     send:"Отправить заказ ✈️", sent:"✅ Заказ отправлен! Мы свяжемся с вами.",
+     need:"Заполните имя и телефон", openbot:"Откройте бота @lentalar_demo_uz_bot и закажите через кнопку «Меню» 🛍",
+     soon:"В этой категории скоро появятся новинки", pcs:"шт."},
+ uz:{tag:"Bitiruv lentalari", all:"Hammasi", cart:"Savat", checkout:"Rasmiylashtirish", empty:"Savat bo'sh",
+     name:"Ismingiz", phone:"Telefon yoki Telegram", note:"Izoh (majburiy emas)",
+     send:"Buyurtmani yuborish ✈️", sent:"✅ Buyurtma yuborildi! Tez orada bog'lanamiz.",
+     need:"Ism va telefonni to'ldiring", openbot:"@lentalar_demo_uz_bot botida «Menu» tugmasi orqali buyurtma bering 🛍",
+     soon:"Bu kategoriyada tez orada yangiliklar bo'ladi", pcs:"dona"}
+};
+
+var lang = 'ru';
+try { lang = localStorage.getItem('ll_lang') || 'ru'; } catch(e){}
+var cart = {};          // id -> qty
+var curCat = -1;
+
+function $(s){ return document.querySelector(s); }
+function t(key){ return L[lang][key]; }
+function pick(arr){ return lang === 'ru' ? arr[0] : arr[1]; }
+
+function toast(msg){
+  var el = $('#toast'); el.textContent = msg; el.classList.add('show');
+  setTimeout(function(){ el.classList.remove('show'); }, 2400);
+}
+function hap(){ try{ tg && tg.HapticFeedback.impactOccurred('light'); }catch(e){} }
+
+function renderChips(){
+  var names = lang === 'ru' ? CATS_RU : CATS;
+  var html = '<button class="chip'+(curCat===-1?' on':'')+'" data-c="-1">'+t('all')+'</button>';
+  for (var i=0;i<CATS.length;i++)
+    html += '<button class="chip'+(curCat===i?' on':'')+'" data-c="'+i+'">'+names[i]+'</button>';
+  $('#chips').innerHTML = html;
+  Array.prototype.forEach.call(document.querySelectorAll('.chip'), function(b){
+    b.onclick = function(){ curCat = +b.getAttribute('data-c'); renderChips(); renderGrid(); hap(); };
+  });
+}
+
+function renderGrid(){
+  var html = '', shown = 0;
+  for (var i=0;i<P.length;i++){
+    var p = P[i];
+    if (curCat !== -1 && p.cat !== curCat) continue;
+    shown++;
+    var q = cart[p.id] || 0;
+    html += '<div class="card">'
+      + '<img class="ph" loading="lazy" src="'+p.img+'" alt="'+p.name+'">'
+      + '<div class="in"><h3>'+p.name+'</h3>'
+      + '<div class="mt">'+pick(p.mat)+' · '+pick(p.col)+'</div>'
+      + '<div class="nt">'+pick(p.n)+'</div>'
+      + '<div class="step"><button data-a="minus" data-id="'+p.id+'">−</button>'
+      + '<span class="q">'+q+'</span>'
+      + '<button class="add" data-a="plus" data-id="'+p.id+'">+</button></div>'
+      + '</div></div>';
+  }
+  if (!shown) html = '<div class="soon">'+t('soon')+'</div>';
+  $('#grid').innerHTML = html;
+  Array.prototype.forEach.call(document.querySelectorAll('.step button'), function(b){
+    b.onclick = function(){
+      var id = +b.getAttribute('data-id'), a = b.getAttribute('data-a');
+      if (a === 'plus') cart[id] = (cart[id]||0) + 1;
+      else { cart[id] = (cart[id]||0) - 1; if (cart[id] <= 0) delete cart[id]; }
+      hap(); renderGrid(); renderBar();
+    };
+  });
+}
+
+function cartQty(){ var n=0; for (var k in cart) n += cart[k]; return n; }
+
+function renderBar(){
+  var n = cartQty();
+  var bar = $('#cartbar');
+  bar.style.display = n ? 'flex' : 'none';
+  $('#cartcount').textContent = n + ' ' + t('pcs');
+  $('#cartlabel').textContent = t('cart');
+}
+
+function renderCart(){
+  var html = '', any = false;
+  for (var i=0;i<P.length;i++){
+    var p = P[i], q = cart[p.id];
+    if (!q) continue;
+    any = true;
+    html += '<div class="ci"><span>'+p.name+' × '+q+'</span><span class="x" data-id="'+p.id+'">✕</span></div>';
+  }
+  $('#cartitems').innerHTML = any ? html : '<div class="ci">'+t('empty')+'</div>';
+  Array.prototype.forEach.call(document.querySelectorAll('.ci .x'), function(x){
+    x.onclick = function(){ delete cart[+x.getAttribute('data-id')]; renderCart(); renderGrid(); renderBar(); };
+  });
+  $('#sheettitle').textContent = t('cart');
+  $('#fname').placeholder = t('name');
+  $('#fphone').placeholder = t('phone');
+  $('#fnote').placeholder = t('note');
+  $('#sendbtn').textContent = t('send');
+  $('#hint').textContent = tg ? '' : t('openbot');
+}
+
+function renderTexts(){
+  $('#tagline').textContent = t('tag');
+  $('#foot').textContent = 'demo · Lentalar.uz · ' + (lang === 'ru' ? 'каталог' : 'katalog');
+  $('#b-ru').classList.toggle('on', lang === 'ru');
+  $('#b-uz').classList.toggle('on', lang === 'uz');
+}
+
+function switchLang(l){
+  lang = l;
+  try { localStorage.setItem('ll_lang', l); } catch(e){}
+  renderTexts(); renderChips(); renderGrid(); renderBar(); hap();
+}
+
+$('#b-ru').onclick = function(){ switchLang('ru'); };
+$('#b-uz').onclick = function(){ switchLang('uz'); };
+
+$('#cartbar').onclick = function(){ renderCart(); $('#sheet').style.display = 'flex'; };
+$('#close').onclick = function(){ $('#sheet').style.display = 'none'; };
+$('#sheet').onclick = function(e){ if (e.target === $('#sheet')) $('#sheet').style.display = 'none'; };
+
+$('#sendbtn').onclick = function(){
+  var name = $('#fname').value.trim(), phone = $('#fphone').value.trim();
+  if (!name || !phone) { toast(t('need')); return; }
+  if (!cartQty()) { toast(t('empty')); return; }
+  var items = [];
+  for (var i=0;i<P.length;i++){
+    var q = cart[P[i].id];
+    if (q) items.push({id:P[i].id, qty:q});
+  }
+  var payload = {app:'lentalar', lang:lang, items:items, name:name, phone:phone, note:$('#fnote').value.trim()};
+  if (tg && typeof tg.sendData === 'function' && tg.initData) {
+    try { tg.sendData(JSON.stringify(payload)); return; } catch(e){}
+  }
+  toast(t('openbot'));
+};
+
+renderTexts(); renderChips(); renderGrid(); renderBar();
+</script>
+</body>
+</html>
