@@ -276,20 +276,21 @@ function renderTexts(){
 function switchLang(l){
   lang = l;
   try { localStorage.setItem('ll_lang', l); } catch(e){}
-  renderTexts(); renderChips(); renderGrid(); renderBar(); hap();
+  renderTexts(); renderChips(); renderGrid(); renderBar(); hap(); syncMainBtn();
 }
 
 $('#b-ru').onclick = function(){ switchLang('ru'); };
 $('#b-uz').onclick = function(){ switchLang('uz'); };
 
-$('#cartbar').onclick = function(){ renderCart(); $('#sheet').style.display = 'flex'; };
-$('#close').onclick = function(){ $('#sheet').style.display = 'none'; };
-$('#sheet').onclick = function(e){ if (e.target === $('#sheet')) $('#sheet').style.display = 'none'; };
+function nativeMsg(m){
+  if (tg && typeof tg.showAlert === 'function') { try { tg.showAlert(m); return; } catch(e){} }
+  toast(m);
+}
 
-$('#sendbtn').onclick = function(){
+function trySend(){
   var name = $('#fname').value.trim(), phone = $('#fphone').value.trim();
-  if (!name || !phone) { toast(t('need')); return; }
-  if (!cartQty()) { toast(t('empty')); return; }
+  if (!name || !phone) { nativeMsg(t('need')); return; }
+  if (!cartQty()) { nativeMsg(t('empty')); return; }
   var items = [];
   for (var i=0;i<P.length;i++){
     var q = cart[P[i].id];
@@ -297,10 +298,32 @@ $('#sendbtn').onclick = function(){
   }
   var payload = {app:'lentalar', lang:lang, items:items, name:name, phone:phone, note:$('#fnote').value.trim()};
   if (tg && typeof tg.sendData === 'function' && tg.initData) {
-    try { tg.sendData(JSON.stringify(payload)); return; } catch(e){}
+    try { tg.sendData(JSON.stringify(payload)); return; }
+    catch(e){ nativeMsg('Ошибка отправки: ' + (e && e.message ? e.message : '—')); return; }
   }
-  toast(t('openbot'));
-};
+  nativeMsg(t('openbot'));
+}
+
+var mainBtnHooked = false;
+function syncMainBtn(){
+  if (!tg || !tg.MainButton) return;
+  if (!mainBtnHooked) {
+    try { tg.MainButton.onClick(trySend); mainBtnHooked = true; } catch(e){ return; }
+  }
+  var open = $('#sheet').style.display === 'flex';
+  try {
+    if (open) {
+      tg.MainButton.setText(t('send').replace(' ✈️',''));
+      tg.MainButton.setParams({color: document.body.classList.contains('dark') ? '#d34756' : '#7a1f2b'});
+      tg.MainButton.show();
+    } else { tg.MainButton.hide(); }
+  } catch(e){}
+}
+
+$('#cartbar').onclick = function(){ renderCart(); $('#sheet').style.display = 'flex'; syncMainBtn(); };
+$('#close').onclick = function(){ $('#sheet').style.display = 'none'; syncMainBtn(); };
+$('#sheet').onclick = function(e){ if (e.target === $('#sheet')) { $('#sheet').style.display = 'none'; syncMainBtn(); } };
+$('#sendbtn').onclick = trySend;
 
 renderTexts(); renderChips(); renderGrid(); renderBar();
 </script>
