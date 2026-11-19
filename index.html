@@ -288,7 +288,7 @@ function nativeMsg(m){
 }
 
 var ORDER_URL = 'https://lentalar-order.marsel20172.workers.dev/order';
-var APP_VER = 'v2';
+var APP_VER = 'v3';
 
 function setSending(on){
   var b = $('#sendbtn');
@@ -364,6 +364,8 @@ $('#cartbar').onclick = function(){ renderCart(); $('#sheet').style.display = 'f
 $('#close').onclick = function(){ $('#sheet').style.display = 'none'; syncMainBtn(); };
 $('#sheet').onclick = function(e){ if (e.target === $('#sheet')) { $('#sheet').style.display = 'none'; syncMainBtn(); } };
 $('#sendbtn').onclick = trySend;
+// если есть родная кнопка Telegram — внутренняя не нужна (иначе дублируются)
+if (tg && tg.MainButton) { $('#sendbtn').style.display = 'none'; }
 
 renderTexts(); renderChips(); renderGrid(); renderBar();
 </script>
